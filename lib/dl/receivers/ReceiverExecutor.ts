@@ -39,7 +39,11 @@ process.on('message', async message => {
         // Our winston logger only outputs to stdout, so this works.
         // Write directly to stdout and await stdout flush.
         writeSync(process.stdout.fd, 'Error now being propagated back to the transmitter.')
-        fsyncSync(process.stdout.fd)
+        try{
+            fsyncSync(process.stdout.fd)
+        }catch(error){
+            log.error(error)
+        }
         process.send!({
             response: 'error',
             displayable
