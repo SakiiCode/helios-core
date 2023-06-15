@@ -9,6 +9,8 @@ import { mcVersionAtLeast } from '../../common/util/MojangUtils'
 import { ensureDir, readJson, writeJson } from 'fs-extra'
 import StreamZip from 'node-stream-zip'
 import { dirname } from 'path'
+import { glob } from 'glob'
+import { unlinkSync } from 'fs'
 
 export class DistributionIndexProcessor extends IndexProcessor {
 
@@ -47,6 +49,37 @@ export class DistributionIndexProcessor extends IndexProcessor {
     }
 
     private async validateModules(modules: HeliosModule[], accumulator: Asset[]): Promise<void> {
+
+        const distroMods = modules.map((module)=>module.getPath())
+            .filter(
+                (path)=>{    
+                    if(process.platform === 'win32'){
+                        return path.match(/(\\instances\\.*\\mods\\[^\/]+.jar)/g) != null
+                    }else{
+                        return path.match(/(\/instances\/.*\/mods\/[^\/]+.jar)/g) != null
+                    }
+                }
+            )
+        
+
+        console.log(distroMods.length + ' mods in distribution.json')
+        const instancesDir = this.commonDir.replace('common','instances')
+
+        if(distroMods.length > 0){
+            let path
+            if(process.platform === 'win32'){
+                path = (instancesDir+'\\'+this.serverId+'\\mods\\*.jar').replaceAll('\\','/')
+            }else{
+                path = instancesDir+'/'+this.serverId+'/mods/*.jar'
+            }
+            console.log(path)
+            const existingMods = glob.globSync(path)
+            console.log(existingMods.length + ' mods in the mods folder')
+            const toBeRemoved = existingMods.filter((mod)=>!distroMods.includes(mod))
+            toBeRemoved.forEach((path)=>unlinkSync(path))
+            console.log('REMOVING: '+JSON.stringify(toBeRemoved))
+        }
+
         for(const module of modules) {
             const hash = module.rawModule.artifact.MD5
 
