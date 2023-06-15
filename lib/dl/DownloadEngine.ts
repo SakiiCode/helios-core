@@ -22,10 +22,12 @@ export async function downloadQueue(assets: Asset[], onProgress: (received: numb
     let received = 0
 
     const onEachProgress = (asset: Asset): (progress: Progress) => void => {
-        return ({ transferred }: Progress): void => {
-            received += (transferred - receivedTotals[asset.id])
-            receivedTotals[asset.id] = transferred
-            onProgress(received)
+        return (progress) => {
+            receivedTotals[asset.id] = progress.transferred
+            if(progress.percent === 1){
+                received++
+                onProgress(received)
+            }
         }
     }
 

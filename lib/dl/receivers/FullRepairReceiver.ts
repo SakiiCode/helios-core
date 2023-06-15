@@ -147,7 +147,7 @@ export class FullRepairReceiver implements Receiver {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async download(_message: DownloadTransmission): Promise<void> {
-        const expectedTotalSize = getExpectedDownloadSize(this.assets)
+        const expectedTotalSize = this.assets.length
     
         log.debug('Expected download size ' + expectedTotalSize)
         this.assets.forEach(({ id }) => log.debug(`Asset Requires Download: ${id}`))
