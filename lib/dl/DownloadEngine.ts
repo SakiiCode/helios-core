@@ -33,7 +33,7 @@ export async function downloadQueue(assets: Asset[], onProgress: (received: numb
 
     const wrap = (asset: Asset): Promise<void> => downloadFile(asset.url, asset.path, onEachProgress(asset))
 
-    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 15)
+    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 5)
 
     const promises: Promise<void>[] = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), ([] as Promise<void>[]))
     await Promise.all(promises)
@@ -66,7 +66,7 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
         }
 
         try {
-            const downloadStream = got.stream(url)
+            const downloadStream = got.stream(url,{timeout: {request: 10000}})
 
             fileWriterStream = createWriteStream(path)
 
@@ -117,7 +117,9 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
 function retryableError(error: Error): boolean {
     if(error instanceof RequestError) {
         // error.name === 'RequestError' means server did not respond.
-        return error.name === 'RequestError' || error instanceof ReadError && error.code === 'ECONNRESET'
+        return error.name === 'RequestError' || 
+                error instanceof ReadError && error.code === 'ECONNRESET' ||
+                error.name === 'TimeoutError'
     } else {
         return false
     }
