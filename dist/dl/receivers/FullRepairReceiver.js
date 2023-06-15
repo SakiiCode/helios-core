@@ -89,7 +89,7 @@ class FullRepairReceiver {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async download(_message) {
-        const expectedTotalSize = (0, DownloadEngine_1.getExpectedDownloadSize)(this.assets);
+        const expectedTotalSize = this.assets.length;
         log.debug('Expected download size ' + expectedTotalSize);
         this.assets.forEach(({ id }) => log.debug(`Asset Requires Download: ${id}`));
         // Reduce load on IPC channel by sending only whole numbers.

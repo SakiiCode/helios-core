@@ -41,14 +41,16 @@ async function downloadQueue(assets, onProgress) {
     const receivedTotals = assets.map(({ id }) => id).reduce((acc, id) => ({ ...acc, [id]: 0 }), ({}));
     let received = 0;
     const onEachProgress = (asset) => {
-        return ({ transferred }) => {
-            received += (transferred - receivedTotals[asset.id]);
-            receivedTotals[asset.id] = transferred;
-            onProgress(received);
+        return (progress) => {
+            receivedTotals[asset.id] = progress.transferred;
+            if (progress.percent === 1) {
+                received++;
+                onProgress(received);
+            }
         };
     };
     const wrap = (asset) => downloadFile(asset.url, asset.path, onEachProgress(asset));
-    const q = fastq.promise(wrap, 15);
+    const q = fastq.promise(wrap, 5);
     const promises = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), []);
     await Promise.all(promises);
     return receivedTotals;
@@ -72,7 +74,7 @@ async function downloadFile(url, path, onProgress) {
             log.debug(`Retry attempt #${retryCount} for ${url}.`);
         }
         try {
-            const downloadStream = got_1.default.stream(url);
+            const downloadStream = got_1.default.stream(url, { timeout: { request: 10000 } });
             fileWriterStream = (0, fs_1.createWriteStream)(path);
             if (onProgress) {
                 downloadStream.on('downloadProgress', progress => onProgress(progress));
@@ -113,7 +115,9 @@ exports.downloadFile = downloadFile;
 function retryableError(error) {
     if (error instanceof got_1.RequestError) {
         // error.name === 'RequestError' means server did not respond.
-        return error.name === 'RequestError' || error instanceof got_1.ReadError && error.code === 'ECONNRESET';
+        return error.name === 'RequestError' ||
+            error instanceof got_1.ReadError && error.code === 'ECONNRESET' ||
+            error.name === 'TimeoutError';
     }
     else {
         return false;
