@@ -33,7 +33,7 @@ export async function downloadQueue(assets: Asset[], onProgress: (received: numb
 
     const wrap = (asset: Asset): Promise<void> => downloadFile(asset.url, asset.path, onEachProgress(asset))
 
-    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 5)
+    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 15)
 
     const promises: Promise<void>[] = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), ([] as Promise<void>[]))
     await Promise.all(promises)
