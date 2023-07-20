@@ -46,7 +46,7 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
     await ensureDir(dirname(path))
 
 
-    const MAX_RETRIES = 10
+    const MAX_RETRIES = 20
     let fileWriterStream: WriteStream = null!       // The write stream.
     let retryCount = 0                              // The number of retries attempted.
     let error: Error = null!                        // The caught error.
@@ -66,7 +66,7 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
         }
 
         try {
-            const downloadStream = got.stream(url,{timeout: {request: 10000}})
+            const downloadStream = got.stream(url,{timeout: {request: 20000}})
 
             fileWriterStream = createWriteStream(path)
 
