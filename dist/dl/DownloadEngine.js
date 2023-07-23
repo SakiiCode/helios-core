@@ -50,7 +50,7 @@ async function downloadQueue(assets, onProgress) {
         };
     };
     const wrap = (asset) => downloadFile(asset.url, asset.path, onEachProgress(asset));
-    const q = fastq.promise(wrap, 5);
+    const q = fastq.promise(wrap, 15);
     const promises = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), []);
     await Promise.all(promises);
     return receivedTotals;
@@ -58,7 +58,7 @@ async function downloadQueue(assets, onProgress) {
 exports.downloadQueue = downloadQueue;
 async function downloadFile(url, path, onProgress) {
     await (0, fs_extra_1.ensureDir)((0, path_1.dirname)(path));
-    const MAX_RETRIES = 10;
+    const MAX_RETRIES = 20;
     let fileWriterStream = null; // The write stream.
     let retryCount = 0; // The number of retries attempted.
     let error = null; // The caught error.
@@ -74,7 +74,7 @@ async function downloadFile(url, path, onProgress) {
             log.debug(`Retry attempt #${retryCount} for ${url}.`);
         }
         try {
-            const downloadStream = got_1.default.stream(url, { timeout: { request: 10000 } });
+            const downloadStream = got_1.default.stream(url, { timeout: { request: 20000 } });
             fileWriterStream = (0, fs_1.createWriteStream)(path);
             if (onProgress) {
                 downloadStream.on('downloadProgress', progress => onProgress(progress));
