@@ -33,7 +33,7 @@ export async function downloadQueue(assets: Asset[], onProgress: (received: numb
 
     const wrap = (asset: Asset): Promise<void> => downloadFile(asset.url, asset.path, onEachProgress(asset))
 
-    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 15)
+    const q: queueAsPromised<Asset, void> = fastq.promise(wrap, 5)
 
     const promises: Promise<void>[] = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), ([] as Promise<void>[]))
     await Promise.all(promises)
@@ -66,7 +66,7 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
         }
 
         try {
-            const downloadStream = got.stream(url,{timeout: {request: 20000}})
+            const downloadStream = got.stream(url,{timeout: {request: 10000}})
 
             fileWriterStream = createWriteStream(path)
 
