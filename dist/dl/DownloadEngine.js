@@ -50,7 +50,7 @@ async function downloadQueue(assets, onProgress) {
         };
     };
     const wrap = (asset) => downloadFile(asset.url, asset.path, onEachProgress(asset));
-    const q = fastq.promise(wrap, 15);
+    const q = fastq.promise(wrap, 5);
     const promises = assets.map(asset => q.push(asset)).reduce((acc, p) => ([...acc, p]), []);
     await Promise.all(promises);
     return receivedTotals;
@@ -74,7 +74,7 @@ async function downloadFile(url, path, onProgress) {
             log.debug(`Retry attempt #${retryCount} for ${url}.`);
         }
         try {
-            const downloadStream = got_1.default.stream(url, { timeout: { request: 20000 } });
+            const downloadStream = got_1.default.stream(url, { timeout: { request: 10000 } });
             fileWriterStream = (0, fs_1.createWriteStream)(path);
             if (onProgress) {
                 downloadStream.on('downloadProgress', progress => onProgress(progress));
