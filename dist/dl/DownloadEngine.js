@@ -74,7 +74,7 @@ async function downloadFile(url, path, onProgress) {
             log.debug(`Retry attempt #${retryCount} for ${url}.`);
         }
         try {
-            const downloadStream = got_1.default.stream(url, { timeout: { request: 10000 } });
+            const downloadStream = got_1.default.stream(url);
             fileWriterStream = (0, fs_1.createWriteStream)(path);
             if (onProgress) {
                 downloadStream.on('downloadProgress', progress => onProgress(progress));
