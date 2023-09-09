@@ -66,7 +66,7 @@ export async function downloadFile(url: string, path: string, onProgress?: (prog
         }
 
         try {
-            const downloadStream = got.stream(url,{timeout: {request: 10000}})
+            const downloadStream = got.stream(url,{timeout: {socket: 10000}})
 
             fileWriterStream = createWriteStream(path)
 
