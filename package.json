@@ -20,6 +20,7 @@
     "./microsoft": "./dist/microsoft.js",
     "./mojang": "./dist/mojang.js"
   },
+  "type":"module",
   "typesVersions": {
     "*": {
       ".": [
