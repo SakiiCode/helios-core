@@ -54,9 +54,9 @@ export class DistributionIndexProcessor extends IndexProcessor {
             .filter(
                 (path)=>{    
                     if(process.platform === 'win32'){
-                        return path.match(/(\\instances\\.*\\mods\\[^\/]+.jar)/g) != null
+                        return path.match(/(\\instances\\.*\\mods\\.*.jar)/g) != null
                     }else{
-                        return path.match(/(\/instances\/.*\/mods\/[^\/]+.jar)/g) != null
+                        return path.match(/(\/instances\/.*\/mods\/.*.jar)/g) != null
                     }
                 }
             )
@@ -66,11 +66,9 @@ export class DistributionIndexProcessor extends IndexProcessor {
         const instancesDir = this.commonDir.replace('common','instances')
 
         if(distroMods.length > 0){
-            let path
-            if(process.platform === 'win32'){
-                path = (instancesDir+'\\'+this.serverId+'\\mods\\*.jar').replaceAll('\\','/')
-            }else{
-                path = instancesDir+'/'+this.serverId+'/mods/*.jar'
+            let path = instancesDir+'/'+this.serverId+'/mods/**/*.jar'
+            if (process.platform === 'win32') {
+                path = path.replaceAll('\\', '/')
             }
             console.log(path)
             const existingMods = glob.globSync(path)
