@@ -50,21 +50,18 @@ class DistributionIndexProcessor extends IndexProcessor_1.IndexProcessor {
         const distroMods = modules.map((module) => module.getPath())
             .filter((path) => {
             if (process.platform === 'win32') {
-                return path.match(/(\\instances\\.*\\mods\\[^\/]+.jar)/g) != null;
+                return path.match(/(\\instances\\.*\\mods\\.*.jar)/g) != null;
             }
             else {
-                return path.match(/(\/instances\/.*\/mods\/[^\/]+.jar)/g) != null;
+                return path.match(/(\/instances\/.*\/mods\/.*.jar)/g) != null;
             }
         });
         console.log(distroMods.length + ' mods in distribution.json');
         const instancesDir = this.commonDir.replace('common', 'instances');
         if (distroMods.length > 0) {
-            let path;
+            let path = instancesDir + '/' + this.serverId + '/mods/**/*.jar';
             if (process.platform === 'win32') {
-                path = (instancesDir + '\\' + this.serverId + '\\mods\\*.jar').replaceAll('\\', '/');
-            }
-            else {
-                path = instancesDir + '/' + this.serverId + '/mods/*.jar';
+                path = path.replaceAll('\\', '/');
             }
             console.log(path);
             const existingMods = glob_1.glob.globSync(path);
