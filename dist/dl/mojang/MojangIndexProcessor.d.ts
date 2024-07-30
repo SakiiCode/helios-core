@@ -1,6 +1,6 @@
 import { Asset } from '../Asset';
 import { IndexProcessor } from '../IndexProcessor';
-import { VersionJson } from './MojangTypes';
+import { VersionJsonBase } from './MojangTypes';
 export declare class MojangIndexProcessor extends IndexProcessor {
     protected version: string;
     static readonly LAUNCHER_JSON_ENDPOINT = "https://launchermeta.mojang.com/mc/launcher.json";
@@ -39,7 +39,7 @@ export declare class MojangIndexProcessor extends IndexProcessor {
      *
      */
     init(): Promise<void>;
-    getVersionJson(): Promise<VersionJson>;
+    getVersionJson(): Promise<VersionJsonBase>;
     private loadAssetIndex;
     private loadVersionJson;
     private loadContentWithRemoteFallback;

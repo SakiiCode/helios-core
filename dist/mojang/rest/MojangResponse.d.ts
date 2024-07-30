@@ -1,24 +1,23 @@
-import { DisplayableError, RestResponse } from '../../common/rest/RestResponse';
+import { RestResponse } from '../../common/rest/RestResponse';
 /**
  * @see https://wiki.vg/Authentication#Errors
  */
 export declare enum MojangErrorCode {
-    ERROR_METHOD_NOT_ALLOWED = 0,
-    ERROR_NOT_FOUND = 1,
+    ERROR_METHOD_NOT_ALLOWED = 0,// INTERNAL
+    ERROR_NOT_FOUND = 1,// INTERNAL
     ERROR_USER_MIGRATED = 2,
     ERROR_INVALID_CREDENTIALS = 3,
     ERROR_RATELIMIT = 4,
     ERROR_INVALID_TOKEN = 5,
-    ERROR_ACCESS_TOKEN_HAS_PROFILE = 6,
-    ERROR_CREDENTIALS_MISSING = 7,
-    ERROR_INVALID_SALT_VERSION = 8,
-    ERROR_UNSUPPORTED_MEDIA_TYPE = 9,
+    ERROR_ACCESS_TOKEN_HAS_PROFILE = 6,// ??
+    ERROR_CREDENTIALS_MISSING = 7,// INTERNAL
+    ERROR_INVALID_SALT_VERSION = 8,// ??
+    ERROR_UNSUPPORTED_MEDIA_TYPE = 9,// INTERNAL
     ERROR_GONE = 10,
     ERROR_UNREACHABLE = 11,
-    ERROR_NOT_PAID = 12,
+    ERROR_NOT_PAID = 12,// Not automatically detected, response is 200 with a certain body.
     UNKNOWN = 13
 }
-export declare function mojangErrorDisplayable(errorCode: MojangErrorCode): DisplayableError;
 export interface MojangResponse<T> extends RestResponse<T> {
     mojangErrorCode?: MojangErrorCode;
     isInternalError?: boolean;

@@ -77,7 +77,7 @@ async function downloadFile(url, path, onProgress) {
             const downloadStream = got_1.default.stream(url, { timeout: { socket: 10000 } });
             fileWriterStream = (0, fs_1.createWriteStream)(path);
             if (onProgress) {
-                downloadStream.on('downloadProgress', progress => onProgress(progress));
+                downloadStream.on('downloadProgress', (progress) => onProgress(progress));
             }
             await (0, promises_1.pipeline)(downloadStream, fileWriterStream);
         }

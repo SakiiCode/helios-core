@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decipherErrorCode = exports.microsoftErrorDisplayable = exports.MicrosoftErrorCode = void 0;
+exports.decipherErrorCode = exports.MicrosoftErrorCode = void 0;
 /**
  * Various error codes from any point of the Microsoft authentication process.
  */
@@ -53,37 +53,7 @@ var MicrosoftErrorCode;
      * @see https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
      */
     MicrosoftErrorCode[MicrosoftErrorCode["UNDER_18"] = 2148916238] = "UNDER_18";
-})(MicrosoftErrorCode = exports.MicrosoftErrorCode || (exports.MicrosoftErrorCode = {}));
-function microsoftErrorDisplayable(errorCode) {
-    switch (errorCode) {
-        case MicrosoftErrorCode.NO_PROFILE:
-            return {
-                title: 'Error During Login:<br>Profile Not Set Up',
-                desc: 'Your Microsoft account does not yet have a Minecraft profile set up. If you have recently purchased the game or redeemed it through Xbox Game Pass, you have to set up your profile on <a href="https://minecraft.net/">Minecraft.net</a>.<br><br>If you have not yet purchased the game, you can also do that on <a href="https://minecraft.net/">Minecraft.net</a>.'
-            };
-        case MicrosoftErrorCode.NO_XBOX_ACCOUNT:
-            return {
-                title: 'Error During Login:<br>No Xbox Account',
-                desc: 'Your Microsoft account has no Xbox account associated with it.'
-            };
-        case MicrosoftErrorCode.XBL_BANNED:
-            return {
-                title: 'Error During Login:<br>Xbox Live Unavailable',
-                desc: 'Your Microsoft account is from a country where Xbox Live is not available or banned.'
-            };
-        case MicrosoftErrorCode.UNDER_18:
-            return {
-                title: 'Error During Login:<br>Parental Approval Required',
-                desc: 'Accounts for users under the age of 18 must be added to a Family by an adult.'
-            };
-        case MicrosoftErrorCode.UNKNOWN:
-            return {
-                title: 'Unknown Error During Login',
-                desc: 'An unknown error has occurred. Please see the console for details.'
-            };
-    }
-}
-exports.microsoftErrorDisplayable = microsoftErrorDisplayable;
+})(MicrosoftErrorCode || (exports.MicrosoftErrorCode = MicrosoftErrorCode = {}));
 /**
  * Resolve the error response code from the response body.
  *

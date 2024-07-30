@@ -14,6 +14,7 @@ if (!Object.prototype.hasOwnProperty.call(manifest, targetReceiver)) {
     process.exit(1);
 }
 const receiver = manifest[targetReceiver]();
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 process.on('message', async (message) => {
     try {
         await receiver.execute(message);

@@ -32,7 +32,7 @@ var MCInfoState;
 (function (MCInfoState) {
     MCInfoState["ACTIVE"] = "ACTIVE";
     MCInfoState["INACTIVE"] = "INACTIVE";
-})(MCInfoState = exports.MCInfoState || (exports.MCInfoState = {}));
+})(MCInfoState || (exports.MCInfoState = MCInfoState = {}));
 /* ***********************************/
 /*         Microsoft Auth API        */
 /* ***********************************/

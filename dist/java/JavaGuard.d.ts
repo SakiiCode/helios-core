@@ -400,6 +400,7 @@ export declare function getValidatableJavaPaths(dataDir: string): Promise<string
 export declare function getWin32Discoverers(dataDir: string): Promise<JavaDiscoverer[]>;
 export declare function getDarwinDiscoverers(dataDir: string): Promise<JavaDiscoverer[]>;
 export declare function getLinuxDiscoverers(dataDir: string): Promise<JavaDiscoverer[]>;
-export declare function getPathsOnAllDrives(paths: string[]): Promise<string[]>;
+export declare function win32DriveMounts(): Promise<string[]>;
+export declare function getPathsOnAllDrivesWin32(paths: string[]): Promise<string[]>;
 export declare function getPossibleJavaEnvs(): string[];
 export declare function getLauncherRuntimeDir(dataDir: string): string;

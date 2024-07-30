@@ -19,6 +19,8 @@ export declare class HeliosServer {
     private parseAddress;
     private parseEffectiveJavaOptions;
     private defaultUndefinedJavaOptions;
+    private defaultJavaVersion;
+    private defaultJavaPlatform;
 }
 export declare class HeliosModule {
     readonly rawModule: Module;

@@ -19,10 +19,10 @@ export interface Session {
     };
     user?: {
         id: string;
-        properties: Array<{
+        properties: {
             name: string;
             value: string;
-        }>;
+        }[];
     };
 }
 export declare enum MojangStatusColor {

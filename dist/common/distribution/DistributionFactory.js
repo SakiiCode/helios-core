@@ -103,11 +103,26 @@ class HeliosServer {
         return this.defaultUndefinedJavaOptions(merged);
     }
     defaultUndefinedJavaOptions(props) {
+        const [defaultRange, defaultSuggestion] = this.defaultJavaVersion();
         return {
-            supported: props.distribution ?? (0, MojangUtils_1.mcVersionAtLeast)('1.17', this.rawServer.minecraftVersion) ? '>=17.x' : '8.x',
-            distribution: props.distribution ?? process.platform === helios_distribution_types_1.Platform.DARWIN ? helios_distribution_types_1.JdkDistribution.CORRETTO : helios_distribution_types_1.JdkDistribution.TEMURIN,
-            suggestedMajor: props.suggestedMajor ?? (0, MojangUtils_1.mcVersionAtLeast)('1.17', this.rawServer.minecraftVersion) ? 17 : 8,
+            supported: props.distribution ?? defaultRange,
+            distribution: props.distribution ?? this.defaultJavaPlatform(),
+            suggestedMajor: props.suggestedMajor ?? defaultSuggestion,
         };
+    }
+    defaultJavaVersion() {
+        if ((0, MojangUtils_1.mcVersionAtLeast)('1.20.5', this.rawServer.minecraftVersion)) {
+            return ['>=21.x', 21];
+        }
+        else if ((0, MojangUtils_1.mcVersionAtLeast)('1.17', this.rawServer.minecraftVersion)) {
+            return ['>=17.x', 17];
+        }
+        else {
+            return ['8.x', 8];
+        }
+    }
+    defaultJavaPlatform() {
+        return process.platform === helios_distribution_types_1.Platform.DARWIN ? helios_distribution_types_1.JdkDistribution.CORRETTO : helios_distribution_types_1.JdkDistribution.TEMURIN;
     }
 }
 exports.HeliosServer = HeliosServer;
@@ -180,11 +195,15 @@ class HeliosModule {
             case helios_distribution_types_1.Type.Library:
             case helios_distribution_types_1.Type.Forge:
             case helios_distribution_types_1.Type.ForgeHosted:
+            case helios_distribution_types_1.Type.Fabric:
             case helios_distribution_types_1.Type.LiteLoader:
                 return (0, path_1.join)(commonDir, 'libraries', relativePath);
             case helios_distribution_types_1.Type.ForgeMod:
             case helios_distribution_types_1.Type.LiteMod:
+                // TODO Move to /mods/forge eventually..
                 return (0, path_1.join)(commonDir, 'modstore', relativePath);
+            case helios_distribution_types_1.Type.FabricMod:
+                return (0, path_1.join)(commonDir, 'mods', 'fabric', relativePath);
             case helios_distribution_types_1.Type.File:
             default:
                 return (0, path_1.join)(instanceDir, this.serverId, relativePath);

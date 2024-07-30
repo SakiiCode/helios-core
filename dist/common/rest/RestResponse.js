@@ -16,7 +16,7 @@ var RestResponseStatus;
      * All status codes outside the 200 range will have an error status.
      */
     RestResponseStatus[RestResponseStatus["ERROR"] = 1] = "ERROR";
-})(RestResponseStatus = exports.RestResponseStatus || (exports.RestResponseStatus = {}));
+})(RestResponseStatus || (exports.RestResponseStatus = RestResponseStatus = {}));
 function isDisplayableError(it) {
     return typeof it == 'object'
         && it != null

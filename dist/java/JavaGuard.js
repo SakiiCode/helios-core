@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLauncherRuntimeDir = exports.getPossibleJavaEnvs = exports.getPathsOnAllDrives = exports.getLinuxDiscoverers = exports.getDarwinDiscoverers = exports.getWin32Discoverers = exports.getValidatableJavaPaths = exports.Win32RegistryJavaDiscoverer = exports.EnvironmentBasedJavaDiscoverer = exports.DirectoryBasedJavaDiscoverer = exports.PathBasedJavaDiscoverer = exports.javaVersionToString = exports.parseJavaRuntimeVersionSemver = exports.parseJavaRuntimeVersionLegacy = exports.parseJavaRuntimeVersion = exports.loadMojangLauncherData = exports.isJavaExecPath = exports.ensureJavaDirIsRoot = exports.javaExecFromRoot = exports.extractJdk = exports.latestCorretto = exports.latestAdoptium = exports.latestOpenJDK = exports.validateSelectedJvm = exports.discoverBestJvmInstallation = exports.rankApplicableJvms = exports.filterApplicableJavaPaths = exports.resolveJvmSettings = exports.getHotSpotSettings = void 0;
+exports.getLauncherRuntimeDir = exports.getPossibleJavaEnvs = exports.getPathsOnAllDrivesWin32 = exports.win32DriveMounts = exports.getLinuxDiscoverers = exports.getDarwinDiscoverers = exports.getWin32Discoverers = exports.getValidatableJavaPaths = exports.Win32RegistryJavaDiscoverer = exports.EnvironmentBasedJavaDiscoverer = exports.DirectoryBasedJavaDiscoverer = exports.PathBasedJavaDiscoverer = exports.javaVersionToString = exports.parseJavaRuntimeVersionSemver = exports.parseJavaRuntimeVersionLegacy = exports.parseJavaRuntimeVersion = exports.loadMojangLauncherData = exports.isJavaExecPath = exports.ensureJavaDirIsRoot = exports.javaExecFromRoot = exports.extractJdk = exports.latestCorretto = exports.latestAdoptium = exports.latestOpenJDK = exports.validateSelectedJvm = exports.discoverBestJvmInstallation = exports.rankApplicableJvms = exports.filterApplicableJavaPaths = exports.resolveJvmSettings = exports.getHotSpotSettings = void 0;
 // Commented out for now, focusing on something else.
 const child_process_1 = require("child_process");
 const fs_extra_1 = require("fs-extra");
@@ -12,7 +12,6 @@ const helios_distribution_types_1 = require("helios-distribution-types");
 const path_1 = require("path");
 const util_1 = require("util");
 const LoggerUtil_1 = require("../util/LoggerUtil");
-const node_disk_info_1 = require("node-disk-info");
 const winreg_1 = __importDefault(require("winreg"));
 const semver_1 = __importDefault(require("semver"));
 const dl_1 = require("../dl");
@@ -517,13 +516,14 @@ class Win32RegistryJavaDiscoverer {
     discover() {
         return new Promise((resolve) => {
             const regKeys = [
-                '\\SOFTWARE\\JavaSoft\\Java Runtime Environment',
-                '\\SOFTWARE\\JavaSoft\\Java Development Kit',
-                '\\SOFTWARE\\JavaSoft\\JRE',
+                '\\SOFTWARE\\JavaSoft\\Java Runtime Environment', // Java 8 and prior
+                '\\SOFTWARE\\JavaSoft\\Java Development Kit', // Java 8 and prior
+                '\\SOFTWARE\\JavaSoft\\JRE', // Java 9+
                 '\\SOFTWARE\\JavaSoft\\JDK' // Java 9+
             ];
             let keysDone = 0;
             const candidates = new Set();
+            // eslint-disable-next-line @typescript-eslint/prefer-for-of
             for (let i = 0; i < regKeys.length; i++) {
                 const key = new winreg_1.default({
                     hive: winreg_1.default.HKLM,
@@ -553,12 +553,13 @@ class Win32RegistryJavaDiscoverer {
                                 }
                                 else {
                                     let numDone = 0;
+                                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
                                     for (let j = 0; j < javaVers.length; j++) {
                                         const javaVer = javaVers[j];
                                         const vKey = javaVer.key.substring(javaVer.key.lastIndexOf('\\') + 1).trim();
                                         let major = -1;
                                         if (vKey.length > 0) {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
                                             if (isNaN(vKey)) {
                                                 // Should be a semver key.
                                                 major = parseJavaRuntimeVersion(vKey)?.major ?? -1;
@@ -652,11 +653,12 @@ async function getWin32Discoverers(dataDir) {
     return [
         new EnvironmentBasedJavaDiscoverer(getPossibleJavaEnvs()),
         new DirectoryBasedJavaDiscoverer([
-            ...(await getPathsOnAllDrives([
+            ...(await getPathsOnAllDrivesWin32([
                 'Program Files\\Java',
                 'Program Files\\Eclipse Adoptium',
                 'Program Files\\Eclipse Foundation',
-                'Program Files\\AdoptOpenJDK'
+                'Program Files\\AdoptOpenJDK',
+                'Program Files\\Amazon Corretto'
             ])),
             getLauncherRuntimeDir(dataDir)
         ]),
@@ -687,8 +689,23 @@ async function getLinuxDiscoverers(dataDir) {
     ];
 }
 exports.getLinuxDiscoverers = getLinuxDiscoverers;
-async function getPathsOnAllDrives(paths) {
-    const driveMounts = (await (0, node_disk_info_1.getDiskInfo)()).map(({ mounted }) => mounted);
+async function win32DriveMounts() {
+    const execAsync = (0, util_1.promisify)(child_process_1.exec);
+    let stdout;
+    try {
+        stdout = (await execAsync('gdr -psp FileSystem | select -eXp root | ConvertTo-Json', { shell: 'powershell.exe' })).stdout;
+    }
+    catch (error) {
+        log.error('Failed to resolve drive mounts!');
+        log.error(error);
+        // Default to C:\\
+        return ['C:\\'];
+    }
+    return JSON.parse(stdout);
+}
+exports.win32DriveMounts = win32DriveMounts;
+async function getPathsOnAllDrivesWin32(paths) {
+    const driveMounts = await win32DriveMounts();
     const res = [];
     for (const path of paths) {
         for (const mount of driveMounts) {
@@ -697,7 +714,7 @@ async function getPathsOnAllDrives(paths) {
     }
     return res;
 }
-exports.getPathsOnAllDrives = getPathsOnAllDrives;
+exports.getPathsOnAllDrivesWin32 = getPathsOnAllDrivesWin32;
 function getPossibleJavaEnvs() {
     return [
         'JAVA_HOME',

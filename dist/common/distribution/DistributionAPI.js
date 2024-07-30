@@ -86,7 +86,7 @@ class DistributionAPI {
                 distro = await this.pullLocal();
             }
             else {
-                this.writeDistributionToDisk(distro);
+                await this.writeDistributionToDisk(distro);
             }
         }
         else {

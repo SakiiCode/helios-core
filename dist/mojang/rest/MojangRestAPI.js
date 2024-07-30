@@ -34,7 +34,7 @@ var MojangStatusColor;
     MojangStatusColor["YELLOW"] = "yellow";
     MojangStatusColor["GREEN"] = "green";
     MojangStatusColor["GREY"] = "grey";
-})(MojangStatusColor = exports.MojangStatusColor || (exports.MojangStatusColor = {}));
+})(MojangStatusColor || (exports.MojangStatusColor = MojangStatusColor = {}));
 class MojangRestAPI {
     static logger = LoggerUtil_1.LoggerUtil.getLogger('Mojang');
     static TIMEOUT = 2500;
@@ -64,12 +64,6 @@ class MojangRestAPI {
                 essential: true
             },
             {
-                service: 'mojang-authserver',
-                status: MojangStatusColor.GREY,
-                name: 'Authentication Service',
-                essential: true
-            },
-            {
                 service: 'minecraft-skins',
                 status: MojangStatusColor.GREY,
                 name: 'Minecraft Skins',
@@ -79,12 +73,6 @@ class MojangRestAPI {
                 service: 'mojang-s-public-api',
                 status: MojangStatusColor.GREY,
                 name: 'Public API',
-                essential: false
-            },
-            {
-                service: 'minecraft-net-website',
-                status: MojangStatusColor.GREY,
-                name: 'Minecraft.net',
                 essential: false
             },
             {
@@ -106,7 +94,7 @@ class MojangRestAPI {
                 essential: true
             },
             {
-                service: 'xbox-live-gatekeeper',
+                service: 'xbox-live-gatekeeper', // Server used to give XTokens
                 status: MojangStatusColor.GREY,
                 name: 'Xbox Live Gatekeeper',
                 essential: true
@@ -196,9 +184,9 @@ class MojangRestAPI {
             const res = await MojangRestAPI.statusClient.get({});
             MojangRestAPI.expectSpecificSuccess('Mojang Status', 200, res.statusCode);
             for (const status of res.body) {
-                for (let i = 0; i < MojangRestAPI.statuses.length; i++) {
-                    if (MojangRestAPI.statuses[i].service === status.slug) {
-                        MojangRestAPI.statuses[i].status = status.status === 'up' ? MojangStatusColor.GREEN : MojangStatusColor.RED;
+                for (const mojStatus of MojangRestAPI.statuses) {
+                    if (mojStatus.service === status.slug) {
+                        mojStatus.status = status.status === 'up' ? MojangStatusColor.GREEN : MojangStatusColor.RED;
                         break;
                     }
                 }
@@ -210,8 +198,8 @@ class MojangRestAPI {
         }
         catch (error) {
             return MojangRestAPI.handleGotError('Mojang Status', error, () => {
-                for (let i = 0; i < MojangRestAPI.statuses.length; i++) {
-                    MojangRestAPI.statuses[i].status = MojangStatusColor.GREY;
+                for (const status of MojangRestAPI.statuses) {
+                    status.status = MojangStatusColor.GREY;
                 }
                 return MojangRestAPI.statuses;
             });

@@ -1,4 +1,4 @@
-import { DisplayableError, RestResponse } from '../../common/rest/RestResponse';
+import { RestResponse } from '../../common/rest/RestResponse';
 /**
  * Various error codes from any point of the Microsoft authentication process.
  */
@@ -51,7 +51,6 @@ export declare enum MicrosoftErrorCode {
      */
     UNDER_18 = 2148916238
 }
-export declare function microsoftErrorDisplayable(errorCode: MicrosoftErrorCode): DisplayableError;
 export interface MicrosoftResponse<T> extends RestResponse<T> {
     microsoftErrorCode?: MicrosoftErrorCode;
 }

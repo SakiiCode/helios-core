@@ -13,6 +13,7 @@ class LoggerUtil {
                     if (info[triple_beam_1.SPLAT].length === 1 && info[triple_beam_1.SPLAT][0] instanceof Error) {
                         const err = info[triple_beam_1.SPLAT][0];
                         if (info.message.length > err.message.length && info.message.endsWith(err.message)) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             info.message = info.message.substring(0, info.message.length - err.message.length);
                         }
                     }
@@ -22,6 +23,7 @@ class LoggerUtil {
                             if (typeof it === 'object' && it != null) {
                                 return (0, util_1.inspect)(it, false, null, true);
                             }
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                             return it;
                         }).join(' ');
                     }
