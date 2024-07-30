@@ -7,7 +7,6 @@ import { dirname, join } from 'path'
 import { promisify } from 'util'
 import { LauncherJson } from '../model/mojang/LauncherJson'
 import { LoggerUtil } from '../util/LoggerUtil'
-import { getDiskInfo } from 'node-disk-info'
 import Registry from 'winreg'
 import semver from 'semver'
 import { Asset, HashAlgo } from '../dl'
@@ -353,7 +352,7 @@ export async function getHotSpotSettings(execPath: string): Promise<HotSpotSetti
             if(!Array.isArray(ret[lastProp])) {
                 ret[lastProp] = [ret[lastProp]]
             }
-            (ret[lastProp] as Array<unknown>).push(prop.trim())
+            (ret[lastProp] as unknown[]).push(prop.trim())
         }
         else if(prop.startsWith('    ')) {
             const tmp = prop.split('=')
@@ -528,7 +527,7 @@ export async function latestOpenJDK(major: number, dataDir: string, distribution
 export async function latestAdoptium(major: number, dataDir: string): Promise<Asset | null> {
 
     const sanitizedOS = process.platform === Platform.WIN32 ? 'windows' : (process.platform === Platform.DARWIN ? 'mac' : process.platform)
-    const arch = process.arch === Architecture.ARM64 ? 'aarch64' : Architecture.X64
+    const arch: string = process.arch === Architecture.ARM64 ? 'aarch64' : Architecture.X64
     const url = `https://api.adoptium.net/v3/assets/latest/${major}/hotspot?vendor=eclipse`
 
     try {
@@ -880,6 +879,7 @@ export class Win32RegistryJavaDiscoverer implements JavaDiscoverer {
 
             const candidates = new Set<string>()
 
+            // eslint-disable-next-line @typescript-eslint/prefer-for-of
             for(let i=0; i<regKeys.length; i++){
                 const key = new Registry({
                     hive: Registry.HKLM,
@@ -910,13 +910,14 @@ export class Win32RegistryJavaDiscoverer implements JavaDiscoverer {
 
                                     let numDone = 0
 
+                                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
                                     for(let j=0; j<javaVers.length; j++){
                                         const javaVer = javaVers[j]
                                         const vKey = javaVer.key.substring(javaVer.key.lastIndexOf('\\')+1).trim()
 
                                         let major = -1
                                         if(vKey.length > 0) {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
                                             if(isNaN(vKey as any)) {
                                                 // Should be a semver key.
                                                 major = parseJavaRuntimeVersion(vKey)?.major ?? -1
@@ -1019,11 +1020,12 @@ export async function getWin32Discoverers(dataDir: string): Promise<JavaDiscover
     return [
         new EnvironmentBasedJavaDiscoverer(getPossibleJavaEnvs()),
         new DirectoryBasedJavaDiscoverer([
-            ...(await getPathsOnAllDrives([
+            ...(await getPathsOnAllDrivesWin32([
                 'Program Files\\Java',
                 'Program Files\\Eclipse Adoptium',
                 'Program Files\\Eclipse Foundation',
-                'Program Files\\AdoptOpenJDK'
+                'Program Files\\AdoptOpenJDK',
+                'Program Files\\Amazon Corretto'
             ])),
             getLauncherRuntimeDir(dataDir)
         ]),
@@ -1055,8 +1057,25 @@ export async function getLinuxDiscoverers(dataDir: string): Promise<JavaDiscover
     ]
 }
 
-export async function getPathsOnAllDrives(paths: string[]): Promise<string[]> {
-    const driveMounts = (await getDiskInfo()).map(({ mounted }) => mounted)
+export async function win32DriveMounts(): Promise<string[]> {
+
+    const execAsync = promisify(exec)
+
+    let stdout
+    try {
+        stdout = (await execAsync('gdr -psp FileSystem | select -eXp root | ConvertTo-Json', {shell: 'powershell.exe'})).stdout
+    } catch(error) {
+        log.error('Failed to resolve drive mounts!')
+        log.error(error)
+        // Default to C:\\
+        return ['C:\\']
+    }
+
+    return JSON.parse(stdout) as string[]
+}
+
+export async function getPathsOnAllDrivesWin32(paths: string[]): Promise<string[]> {
+    const driveMounts = await win32DriveMounts()
     const res: string[] = []
     for(const path of paths) {
         for(const mount of driveMounts) {

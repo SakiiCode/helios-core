@@ -122,13 +122,28 @@ export class HeliosServer {
     }
 
     private defaultUndefinedJavaOptions(props: JavaVersionProps): Required<JavaVersionProps> {
+        const [defaultRange, defaultSuggestion] = this.defaultJavaVersion()
         return {
-            supported: props.distribution ?? mcVersionAtLeast('1.17', this.rawServer.minecraftVersion) ? '>=17.x' : '8.x',
-            distribution: props.distribution ?? process.platform === Platform.DARWIN ? JdkDistribution.CORRETTO : JdkDistribution.TEMURIN,
-            suggestedMajor: props.suggestedMajor ?? mcVersionAtLeast('1.17', this.rawServer.minecraftVersion) ? 17 : 8,
+            supported: props.distribution ?? defaultRange,
+            distribution: props.distribution ?? this.defaultJavaPlatform(),
+            suggestedMajor: props.suggestedMajor ?? defaultSuggestion,
         }
     }
 
+    private defaultJavaVersion(): [string, number] {
+        if(mcVersionAtLeast('1.20.5', this.rawServer.minecraftVersion)) {
+            return ['>=21.x', 21]
+        } else if(mcVersionAtLeast('1.17', this.rawServer.minecraftVersion)) {
+            return ['>=17.x', 17]
+        } else {
+            return ['8.x', 8]
+        }
+    }
+
+    private defaultJavaPlatform(): JdkDistribution {
+        return process.platform === Platform.DARWIN ? JdkDistribution.CORRETTO : JdkDistribution.TEMURIN
+    }
+ 
 }
 
 export class HeliosModule {
@@ -220,11 +235,15 @@ export class HeliosModule {
             case Type.Library:
             case Type.Forge:
             case Type.ForgeHosted:
+            case Type.Fabric:
             case Type.LiteLoader:
                 return join(commonDir, 'libraries', relativePath)
             case Type.ForgeMod:
             case Type.LiteMod:
+                // TODO Move to /mods/forge eventually..
                 return join(commonDir, 'modstore', relativePath)
+            case Type.FabricMod:
+                return join(commonDir, 'mods', 'fabric', relativePath)
             case Type.File:
             default:
                 return join(instanceDir, this.serverId, relativePath) 

@@ -11,6 +11,7 @@ import StreamZip from 'node-stream-zip'
 import { dirname } from 'path'
 import { glob } from 'glob'
 import { unlinkSync } from 'fs'
+import { VersionJsonBase } from '../mojang/MojangTypes'
 
 export class DistributionIndexProcessor extends IndexProcessor {
 
@@ -45,7 +46,7 @@ export class DistributionIndexProcessor extends IndexProcessor {
     }
 
     public async postDownload(): Promise<void> {
-        await this.loadForgeVersionJson()
+        await this.loadModLoaderVersionJson()
     }
 
     private async validateModules(modules: HeliosModule[], accumulator: Asset[]): Promise<void> {
@@ -98,36 +99,30 @@ export class DistributionIndexProcessor extends IndexProcessor {
         }
     }
 
-    // TODO Type the return type.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async loadForgeVersionJson(): Promise<any> {
+    public async loadModLoaderVersionJson(): Promise<VersionJsonBase> {
 
         const server: HeliosServer = this.distribution.getServerById(this.serverId)!
         if(server == null) {
             throw new AssetGuardError(`Invalid server id ${this.serverId}`)
         }
 
-        const forgeModule = server.modules.find(({ rawModule: { type } }) => type === Type.ForgeHosted || type === Type.Forge)
+        const modLoaderModule = server.modules.find(({ rawModule: { type } }) => type === Type.ForgeHosted || type === Type.Forge || type === Type.Fabric)
 
-        if(forgeModule == null) {
-            throw new AssetGuardError('No Forge module found!')
+        if(modLoaderModule == null) {
+            throw new AssetGuardError('No mod loader found!')
         }
 
-        if(DistributionIndexProcessor.isForgeGradle3(server.rawServer.minecraftVersion, forgeModule.getMavenComponents().version)) {
-
-            const versionManifstModule = forgeModule.subModules.find(({ rawModule: { type }}) => type === Type.VersionManifest)
-            if(versionManifstModule == null) {
-                throw new AssetGuardError('No Forge version manifest module found!')
-            }
-
-            return await readJson(versionManifstModule.getPath(), 'utf-8')
-
+        if(modLoaderModule.rawModule.type === Type.Fabric
+            || DistributionIndexProcessor.isForgeGradle3(server.rawServer.minecraftVersion, modLoaderModule.getMavenComponents().version)) {
+            return await this.loadVersionManifest<VersionJsonBase>(modLoaderModule)
         } else {
 
-            const zip = new StreamZip.async({ file: forgeModule.getPath() })
+            const zip = new StreamZip.async({ file: modLoaderModule.getPath() })
 
             try {
-                const data = JSON.parse((await zip.entryData('version.json')).toString('utf8'))
+
+                const data = JSON.parse((await zip.entryData('version.json')).toString('utf8')) as VersionJsonBase
                 const writePath = getVersionJsonPath(this.commonDir, data.id)
     
                 await ensureDir(dirname(writePath))
@@ -140,6 +135,15 @@ export class DistributionIndexProcessor extends IndexProcessor {
             }
             
         }
+    }
+
+    public async loadVersionManifest<T>(modLoaderModule: HeliosModule): Promise<T> {
+        const versionManifstModule = modLoaderModule.subModules.find(({ rawModule: { type }}) => type === Type.VersionManifest)
+        if(versionManifstModule == null) {
+            throw new AssetGuardError('No mod loader version manifest module found!')
+        }
+
+        return await readJson(versionManifstModule.getPath(), 'utf-8') as T
     }
 
     // TODO Move this to a util maybe
