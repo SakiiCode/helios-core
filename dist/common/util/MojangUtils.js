@@ -1,10 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mcVersionAtLeast = exports.isLibraryCompatible = exports.validateLibraryNatives = exports.validateLibraryRules = exports.getMojangOS = void 0;
-const semver_1 = __importDefault(require("semver"));
 function getMojangOS() {
     const opSys = process.platform;
     switch (opSys) {
@@ -54,6 +50,23 @@ exports.isLibraryCompatible = isLibraryCompatible;
  * @param {string} actual The actual version.
  */
 function mcVersionAtLeast(desired, actual) {
-    return semver_1.default.satisfies(actual, `>=${desired}`);
+    const des = desired.split('.');
+    const act = actual.split('.');
+    if (act.length < des.length) {
+        for (let i = act.length; i < des.length; i++) {
+            act[i] = '0';
+        }
+    }
+    for (let i = 0; i < des.length; i++) {
+        const parsedDesired = parseInt(des[i]);
+        const parsedActual = parseInt(act[i]);
+        if (parsedActual > parsedDesired) {
+            return true;
+        }
+        else if (parsedActual < parsedDesired) {
+            return false;
+        }
+    }
+    return true;
 }
 exports.mcVersionAtLeast = mcVersionAtLeast;
