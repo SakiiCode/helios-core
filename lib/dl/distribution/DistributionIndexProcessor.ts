@@ -99,7 +99,6 @@ export class DistributionIndexProcessor extends IndexProcessor {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async loadModLoaderVersionJson(): Promise<VersionJsonBase> {
 
         const server: HeliosServer = this.distribution.getServerById(this.serverId)!

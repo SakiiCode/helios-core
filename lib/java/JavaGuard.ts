@@ -1,4 +1,3 @@
-// Commented out for now, focusing on something else.
 import { exec } from 'child_process'
 import { pathExists, readdir } from 'fs-extra'
 import got from 'got'
@@ -433,8 +432,8 @@ export function rankApplicableJvms(details: JvmDetails[]): void {
                 if(a.semver.patch === b.semver.patch){
 
                     // Same version, give priority to JRE.
-                    if(a.path.toLowerCase().indexOf('jdk') > -1){
-                        return b.path.toLowerCase().indexOf('jdk') > -1 ? 0 : 1
+                    if(a.path.toLowerCase().includes('jdk')){
+                        return b.path.toLowerCase().includes('jdk') ? 0 : 1
                     } else {
                         return -1
                     }
@@ -626,7 +625,7 @@ export async function extractJdk(archivePath: string): Promise<string> {
             // Get the first
             if(javaExecPath == null) {
                 let h = header.name
-                if(h.indexOf('/') > -1){
+                if(h.includes('/')){
                     h = h.substring(0, h.indexOf('/'))
                 }
                 javaExecPath = javaExecFromRoot(join(dirname(archivePath), h))
