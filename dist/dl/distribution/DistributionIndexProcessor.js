@@ -87,7 +87,6 @@ class DistributionIndexProcessor extends IndexProcessor_1.IndexProcessor {
             }
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async loadModLoaderVersionJson() {
         const server = this.distribution.getServerById(this.serverId);
         if (server == null) {

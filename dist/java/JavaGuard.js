@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLauncherRuntimeDir = exports.getPossibleJavaEnvs = exports.getPathsOnAllDrivesWin32 = exports.win32DriveMounts = exports.getLinuxDiscoverers = exports.getDarwinDiscoverers = exports.getWin32Discoverers = exports.getValidatableJavaPaths = exports.Win32RegistryJavaDiscoverer = exports.EnvironmentBasedJavaDiscoverer = exports.DirectoryBasedJavaDiscoverer = exports.PathBasedJavaDiscoverer = exports.javaVersionToString = exports.parseJavaRuntimeVersionSemver = exports.parseJavaRuntimeVersionLegacy = exports.parseJavaRuntimeVersion = exports.loadMojangLauncherData = exports.isJavaExecPath = exports.ensureJavaDirIsRoot = exports.javaExecFromRoot = exports.extractJdk = exports.latestCorretto = exports.latestAdoptium = exports.latestOpenJDK = exports.validateSelectedJvm = exports.discoverBestJvmInstallation = exports.rankApplicableJvms = exports.filterApplicableJavaPaths = exports.resolveJvmSettings = exports.getHotSpotSettings = void 0;
-// Commented out for now, focusing on something else.
 const child_process_1 = require("child_process");
 const fs_extra_1 = require("fs-extra");
 const got_1 = __importDefault(require("got"));
@@ -116,8 +115,8 @@ function rankApplicableJvms(details) {
             if (a.semver.minor === b.semver.minor) {
                 if (a.semver.patch === b.semver.patch) {
                     // Same version, give priority to JRE.
-                    if (a.path.toLowerCase().indexOf('jdk') > -1) {
-                        return b.path.toLowerCase().indexOf('jdk') > -1 ? 0 : 1;
+                    if (a.path.toLowerCase().includes('jdk')) {
+                        return b.path.toLowerCase().includes('jdk') ? 0 : 1;
                     }
                     else {
                         return -1;
@@ -301,7 +300,7 @@ async function extractJdk(archivePath) {
             // Get the first
             if (javaExecPath == null) {
                 let h = header.name;
-                if (h.indexOf('/') > -1) {
+                if (h.includes('/')) {
                     h = h.substring(0, h.indexOf('/'));
                 }
                 javaExecPath = javaExecFromRoot((0, path_1.join)((0, path_1.dirname)(archivePath), h));

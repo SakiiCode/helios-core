@@ -8,7 +8,9 @@ const util_1 = require("util");
 class LoggerUtil {
     static getLogger(label) {
         return (0, winston_1.createLogger)({
-            format: winston_1.format.combine(winston_1.format.label(), winston_1.format.colorize(), winston_1.format.label({ label }), winston_1.format.printf(info => {
+            format: winston_1.format.combine(winston_1.format.label(), winston_1.format.colorize(), winston_1.format.label({ label }), winston_1.format.printf(infoUnknown => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const info = infoUnknown;
                 if (info[triple_beam_1.SPLAT]) {
                     if (info[triple_beam_1.SPLAT].length === 1 && info[triple_beam_1.SPLAT][0] instanceof Error) {
                         const err = info[triple_beam_1.SPLAT][0];
